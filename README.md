@@ -86,7 +86,29 @@ The following image shows the original straigefig('foo.png' ht road image, how i
 
 #### 4. Have lane line pixels been identified in the rectified image and fit with a polynomial?
 
-Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this:
+I created a function called `create_lane_lines()` that takes an image (or a frame of video) and returns an image with extrapolated lane lines. The steps this function takes are as follows: 
+1. Processes the original image (with gradients and color thresholds) to create a binary image.
+2. Masks the image with a "region of interest".
+3. Warps the image to create a top-down view.
+4. A histogram is computed for the image to initialize the initial position of lane lines. 
+5. A sliding window approach is taken to travel the image and find pixels for each lane. 
+6. These points are added to arrays and a second order  polynomial is fit to the points to create a curved model of the lane line. 
+7. These lines are used to fill a polygon that represents the lane. The image is re-projected back to its original perspective.
+
+Solarized dark             |  Solarized Ocean
+:-------------------------:|:-------------------------:
+![](./test_images/warped_binary.jpg)  |  ![](./test_images/points.jpg)
+
+
+
+
+
+
+
+
+
+
+The final result (with annotations for curvature and center) like this:
 
 ![alt text][image5]
 
