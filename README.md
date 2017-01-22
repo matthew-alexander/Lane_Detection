@@ -14,10 +14,10 @@ The goals / steps of this project are the following:
 
 [//]: # (Image References)
 
-[image1]: ./examples/undistort_output.png "Undistorted"
-[image2]: ./test_images/test1.jpg "Road Transformed"
-[image3]: ./examples/binary_combo_example.jpg "Binary Example"
-[image4]: ./examples/warped_straight_lines.jpg "Warp Example"
+[image1]: ./test_images/checker_undistorted.jpg "Undistorted"
+[image2]: ./test_images/undistorted_test7.jpg "Road Undistorted"
+[image3]: ./test_images/test7_binary.jpg "Binary Example"
+[image4]: ./test_images/transform.jpg "Warp Example"
 [image5]: ./examples/color_fit_lines.jpg "Fit Visual"
 [video1]: ./project_video.mp4 "Fit Visual"
 
@@ -26,58 +26,65 @@ The goals / steps of this project are the following:
 
 ---
 
-###Camera Calibration
+### Camera Calibration
 
-####1. Have the camera matrix and distortion coefficients been computed correctly and checked on one of the calibration images as a test?
-The code for this step is contained in the first code cell of the IPython notebook located in "./examples/example.ipynb" (or in lines # through # of the file called `some_file.py`).  
+#### 1. Have the camera matrix and distortion coefficients been computed correctly and checked on one of the calibration images as a test?
+The code for this step is contained in the second through fourth code cell of the IPython notebook located in "P4-Advanced-Lane-Lines.ipynb".  
 
-I start by preparing "object points", which will be the (x, y, z) coordinates of the chessboard corners in the world. Here I am assuming the chessboard is fixed on the (x, y) plane at z=0, such that the object points are the same for each calibration image.  Thus, `objp` is just a replicated array of coordinates, and `objpoints` will be appended with a copy of it every time I successfully detect all chessboard corners in a test image.  `imgpoints` will be appended with the (x, y) pixel position of each of the corners in the image plane with each successful chessboard detection.  
+The car's camera was calibrated using pictures taken of a chessboard and making use of an OpenCV function called cv2.findChessboardCorners. The function uses a pinhole camera model to discern the lens distortion in the camera by detecting corners within a chessboard and then creating a mathmatical adjustment to straighten the image. 
 
-I then used the output `objpoints` and `imgpoints` to compute the camera calibration and distortion coefficients using the `cv2.calibrateCamera()` function.  I applied this distortion correction to the test image using the `cv2.undistort()` function and obtained this result: 
+The following code reads in a series of chessboard images. For each image, the cv2.findChessboardCorners function is called and if the chessboard corners are detected, appends them to a list. The OpenCV function `cv2.calibrateCamera()` uses this list of `objpoints` and `imgpoints` to calculate a calibration matrix by which all future images from the same camera can be undistorted. 
+
+I applied this distortion correction to the test image using the `cv2.undistort()` function and obtained this result: 
 
 ![alt text][image1]
 
-###Pipeline (single images)
+### Pipeline (single images)
 
-####1. Has the distortion correction been correctly applied to each image?
-To demonstrate this step, I will describe how I apply the distortion correction to one of the test images like this one:
-![alt text][image2]
-####2. Has a binary image been created using color transforms, gradients or other methods?
-Oooh, binary image... you mean like this one?  (note: this is not from one of the test images)
+#### 1. Has the distortion correction been correctly applied to each image?
+I applied the distortion correction to one of the images from the video. I chose this image for much of the processing because it was a good straight section of the road and I could get good results from the perspective transformation that follows. 
+
+Below is an undistorted version of the image, using the same process as above for the checkerboad calibration.
+![alt text][image2] 
+#### 2. Has a binary image been created using color transforms, gradients or other methods?
+I created a binary image that took advantage of both gradient and color thresholding. I included this process in a function called `process_image(image)` which takes in the original frame of video or image file, undistorts it using the calibration matrix derived from the camera calibration process, computes the sobel gradient in the x direction, and computes a color thresholded binary image using the saturation channel of the image.
+
+The x-gradient binary image and the binary result of the saturation thresholded image are then combined, selecting all nonzero pixels shared in both images. 
 
 ![alt text][image3]
 
-####3. Has a perspective transform been applied to rectify the image?
+#### 3. Has a perspective transform been applied to rectify the image?
 
-The code for my perspective transform includes a function called `warper()`, which appears in lines 1 through 8 in the file `example.py` (output_images/examples/example.py) (or, for example, in the 3rd code cell of the IPython notebook).  The `warper()` function takes as inputs an image (`img`), as well as source (`src`) and destination (`dst`) points.  I chose the hardcode the source and destination points in the following manner:
+The code for my perspective transform then takes the binary image and warps the perspective to create a top-down view (this can be found in the 3rd code cell of the IPython notebook). 
+
+I chose to manually pick source (`src`) and destination (`dst`) points.  My harcoded `src` and `dst` points are as follows:
 
 ```
-src = np.float32(
-    [[(img_size[0] / 2) - 55, img_size[1] / 2 + 100],
-    [((img_size[0] / 6) - 10), img_size[1]],
-    [(img_size[0] * 5 / 6) + 60, img_size[1]],
-    [(img_size[0] / 2 + 55), img_size[1] / 2 + 100]])
-dst = np.float32(
-    [[(img_size[0] / 4), 0],
-    [(img_size[0] / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), 0]])
+src = np.float32([(606,450), (675,450), (1054,680), (327,680)]) 
+dst = np.float32([[x_offset, y_offset], 
+                  [img_size[0]-x_offset, y_offset], 
+                  [img_size[0]-x_offset, img_size[1]-y_offset], 
+                  [x_offset, img_size[1]-y_offset]])
 
 ```
 This resulted in the following source and destination points:
 
 | Source        | Destination   | 
 |:-------------:|:-------------:| 
-| 585, 460      | 320, 0        | 
-| 203, 720      | 320, 720      |
-| 1127, 720     | 960, 720      |
-| 695, 460      | 960, 0        |
+| 606, 450      | 400, 0        | 
+| 675, 450      | 880, 0        |
+| 1054, 680     | 880, 720      |
+| 327, 680      | 400, 720      |
 
 I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.
 
+Another step I included was to mask the image a bit likewe did in the first project. 
+
+The following image shows the original straigefig('foo.png' ht road image, how it was masked using a "region of interest" and the resultant warped image. This is just to illustrate the transform. In the actual pipeline, the transformation happens to the binary image. I will show that below, using a more curved section of road. 
+
 ![alt text][image4]
 
-####4. Have lane line pixels been identified in the rectified image and fit with a polynomial?
+#### 4. Have lane line pixels been identified in the rectified image and fit with a polynomial?
 
 Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this:
 
