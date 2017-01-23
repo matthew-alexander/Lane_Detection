@@ -14,11 +14,11 @@ The goals / steps of this project are the following:
 
 [//]: # (Image References)
 
-[image1]: ./test_images/checker_undistorted.jpg "Undistorted"
+[image1]: ./test_images/calibration_output.jpg "Undistorted"
 [image2]: ./test_images/undistorted_test7.jpg "Road Undistorted"
 [image3]: ./test_images/test7_binary.jpg "Binary Example"
 [image4]: ./test_images/transform.jpg "Warp Example"
-[image5]: ./test_images/final_single.jpg "Fit Visual"
+[image5]: ./test_images/final_single.jpg "Final image"
 [video1]: ./project_video.mp4 "Fit Visual"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
@@ -46,8 +46,9 @@ I applied the distortion correction to one of the images from the video. I chose
 
 Below is an undistorted version of the image, using the same process as above for the checkerboad calibration.
 ![alt text][image2] 
+
 #### 2. Has a binary image been created using color transforms, gradients or other methods?
-I created a binary image that took advantage of both gradient and color thresholding. I included this process in a function called `process_image(image)` which takes in the original frame of video or image file, undistorts it using the calibration matrix derived from the camera calibration process, computes the sobel gradient in the x direction, and computes a color thresholded binary image using the saturation channel of the image.
+I created a binary image that took advantage of both gradient and color thresholding. I included this process in a function called `process_image(image)` (located in code cell 7 in the `P4-Advanced-Lane-Lines` IPython notebook) which takes in the original frame of video or image file, undistorts it using the calibration matrix derived from the camera calibration process, computes the sobel gradient in the x direction, and computes a color thresholded binary image using the saturation channel of the image.
 
 The x-gradient binary image and the binary result of the saturation thresholded image are then combined, selecting all nonzero pixels shared in both images. 
 
@@ -55,7 +56,7 @@ The x-gradient binary image and the binary result of the saturation thresholded 
 
 #### 3. Has a perspective transform been applied to rectify the image?
 
-The code for my perspective transform then takes the binary image and warps the perspective to create a top-down view (this can be found in the 3rd code cell of the IPython notebook). 
+The code for my perspective transform then takes the binary image and warps the perspective to create a top-down view (this can be found in the 9th code cell of the IPython notebook). 
 
 I chose to manually pick source (`src`) and destination (`dst`) points.  My harcoded `src` and `dst` points are as follows:
 
@@ -86,8 +87,8 @@ The following image shows the original straigefig('foo.png' ht road image, how i
 
 #### 4. Have lane line pixels been identified in the rectified image and fit with a polynomial?
 
-I created a function called `create_lane_lines()` that takes an image (or a frame of video) and returns an image with extrapolated lane lines. The steps this function takes are as follows:
- 
+Starting around cde block 10, I created a process (later combined in a function called `create_lane_lines()`)  that takes an image (or a frame of video) and returns an image with extrapolated lane lines. The steps of this function takes are as follows:
+
 1. Processes the original image (with gradients and color thresholds) to create a binary image.
 2. Masks the image with a "region of interest".
 3. Warps the image to create a top-down view.
@@ -110,15 +111,17 @@ The final result (with annotations for curvature and center) like this:
 
 ####5. Having identified the lane lines, has the radius of curvature of the road been estimated? And the position of the vehicle with respect to center in the lane?
 
-I calculated the radius of curvature and the center position within the `create_lane_lines()` function. The image above shows the final result, with the metrics for left and right curve radius and the "meters off center."
+I calculated the radius of curvature and the center position within the `create_lane_lines()` function (see the heading Fitting Lanes (complete function) in the IPython notebook). The image above shows the final result, with the metrics for left and right curve radius and the "meters off center."
 
 ---
 
 ###Pipeline (video)
 
-####1. Does the pipeline established with the test images work to process the video?
+####1. Does the pipeline established with the images work to process the video?
 
-It sure does!  Here's a [link to my video result](./project_video.mp4)
+Yes the pipeline does process the video. I also added some filtering using a Line Class. I created a line object for the left lane and the right lane to store values in. The main values I stored were the coefficients of the fitted lane lines. Each time a new frame is loaded into the pipeline, the coeffiecients calculated during that frame are compared to the previous frames coefficients and a first-ordder filter creates a weighted average. The filtered lane lines are then used for the re-projection in the current frame and the coefficients are updated in the lane object for each lane. 
+
+ Here's a [link to my video result](./project_video_output_newprocess.mp4)
 
 ---
 
@@ -126,10 +129,16 @@ It sure does!  Here's a [link to my video result](./project_video.mp4)
 
 ####1. Has a README file been included that describes in detail the steps taken to construct the pipeline, techniques used, areas where improvements could be made?
 
-You're reading it!
+This is it. 
 
 
 ---
 ##Discussion
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+The pipeline I constructed followed the general approach from the lessons. Currently the main way I am processing the images is using the x-gradients and the saturated channel and combined the results from these two. I think there is some real improvement that can be made here, as the lines still struggle when the road colors change dramatically. There was a suggesting in the forums to experiment with LUV color space and I think I will try that next. 
+
+The part of the pipeline that finds the line does fairly well but I think the process can be made to be quicker. The methods recommended for determining line 'confidence' and adjusting the process are something I will try next. 
+
+The most successful part of the pipeline is the filter. Like in P1, the filter does a lot of work making the lines less jittery.  
+
+All in all, the process manages to find the lines. There are some improvements to make related to making the pipeline adaptible to a confidence metric. This may make the process quicker.   
