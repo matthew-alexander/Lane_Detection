@@ -86,7 +86,8 @@ The following image shows the original straigefig('foo.png' ht road image, how i
 
 #### 4. Have lane line pixels been identified in the rectified image and fit with a polynomial?
 
-I created a function called `create_lane_lines()` that takes an image (or a frame of video) and returns an image with extrapolated lane lines. The steps this function takes are as follows: 
+I created a function called `create_lane_lines()` that takes an image (or a frame of video) and returns an image with extrapolated lane lines. The steps this function takes are as follows:
+ 
 1. Processes the original image (with gradients and color thresholds) to create a binary image.
 2. Masks the image with a "region of interest".
 3. Warps the image to create a top-down view.
