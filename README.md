@@ -18,7 +18,7 @@ The goals / steps of this project are the following:
 [image2]: ./test_images/undistorted_test7.jpg "Road Undistorted"
 [image3]: ./test_images/test7_binary.jpg "Binary Example"
 [image4]: ./test_images/transform.jpg "Warp Example"
-[image5]: ./examples/color_fit_lines.jpg "Fit Visual"
+[image5]: ./test_images/final_single.jpg "Fit Visual"
 [video1]: ./project_video.mp4 "Fit Visual"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
@@ -95,18 +95,13 @@ I created a function called `create_lane_lines()` that takes an image (or a fram
 6. These points are added to arrays and a second order  polynomial is fit to the points to create a curved model of the lane line. 
 7. These lines are used to fill a polygon that represents the lane. The image is re-projected back to its original perspective.
 
-Solarized dark             |  Solarized Ocean
+The following images are the results for `test3.jpg`:
+
+Warped Binary Image            |  Lane Pixel Lines and Polynomial Line Fits
 :-------------------------:|:-------------------------:
 ![](./test_images/warped_binary.jpg)  |  ![](./test_images/points.jpg)
 
-
-
-
-
-
-
-
-
+The following image is of the re-projected image with the addition of the lane line polygon created by the process described above. 
 
 The final result (with annotations for curvature and center) like this:
 
@@ -114,7 +109,7 @@ The final result (with annotations for curvature and center) like this:
 
 ####5. Having identified the lane lines, has the radius of curvature of the road been estimated? And the position of the vehicle with respect to center in the lane?
 
-Yep, sure did!
+I calculated the radius of curvature and the center position within the `create_lane_lines()` function. The image above shows the final result, with the metrics for left and right curve radius and the "meters off center."
 
 ---
 
